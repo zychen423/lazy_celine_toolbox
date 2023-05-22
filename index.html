@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text Input and Output</title>
+    <style>
+        #container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Adjust alignment of container */
+        }
+
+        #left {
+            flex: 1;
+            padding: 10px;
+        }
+
+        #right {
+            flex: 1;
+            padding: 10px;
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column; /* Set flex direction to column */
+        }
+
+        #copyButton {
+            margin-top: 10px; /* Adjust margin of the copy button */
+            width: 100px; /* Adjust the width of the copy button */
+
+        }
+
+        #textOutput {
+            margin-top: 10px; /* Adjust margin of the output text */
+            overflow-y: scroll; /* Add scroll to the right div */
+            flex: 1; /* Make the textOutput area fill remaining vertical space */
+        }
+    </style>
+
+</head>
+<body>
+    <div id="container">
+        <div id="left">
+            <h2>Input</h2>
+            <textarea id="textInput" rows="20" cols="50"></textarea>
+            <br>
+            <button onclick="processText()">Process</button>
+        </div>
+        <div id="right">
+            <h2>Output</h2>
+            <button id="copyButton" onclick="copyOutput()">Copy</button> <!-- Add copy button -->
+            <textarea id="textOutput" rows="20" cols="50"></textarea>
+        </div>
+    </div>
+
+    <script>
+        function processText() {
+            var input = document.getElementById("textInput").value;
+            var lines = input.split('\n'); // Split input into separate lines
+            var output = "";
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                console.log(line)
+                var processedLine = transformText(line); // Call your text processing function here
+                output += processedLine + "\n";
+            }
+
+            document.getElementById("textOutput").innerHTML = output;
+        }
+
+        function transformText(input) {
+            // Regular expression to match Chinese characters
+            var chinesePattern = /[\u4e00-\u9fa5]/g;
+
+            // Regular expression to match English and numerical characters
+            var englishNumericalPattern = /[a-zA-Z0-9]/g;
+
+            // Insert space between Chinese and English/Numerical characters if there is no existing space
+            var transformedText = input.replace(chinesePattern, function (match, index) {
+            if (index === input.length - 1 || !isEnglishAfter(input, index)) {
+                return match;
+            }
+            return match + ' ';
+            });
+
+            transformedText = transformedText.replace(englishNumericalPattern, function (match, index) {
+            if (index === transformedText.length - 1 || !isChineseAfter(transformedText, index)) {
+                return match;
+            }
+            return match + ' ';
+            });
+
+            // Helper function to check if there is an English character before the index
+            function isEnglishAfter(text, index) {
+            return englishNumericalPattern.test(text.charAt(index + 1));
+            }
+
+            // Helper function to check if there is a Chinese character after the index
+            function isChineseAfter(text, index) {
+            return chinesePattern.test(text.charAt(index + 1));
+            }
+
+            // Return original input if the trimmed result exceeds 16 characters
+            if (transformedText.length >= 16) {
+                return input;
+            }
+
+            return transformedText;
+        }
+
+        function copyOutput() {
+            var outputText = document.getElementById("textOutput").textContent; // Get the content of the output div
+            var tempInput = document.createElement("textarea"); // Create a temporary textarea element
+            document.body.appendChild(tempInput);
+            tempInput.value = outputText; // Set the value of the temporary textarea to the output text
+            tempInput.select();
+            document.execCommand("copy"); // Copy the selected text to the clipboard
+            document.body.removeChild(tempInput); // Remove the temporary textarea element
+            alert("Output copied to clipboard!");
+        }
+
+
+    </script>
+</body>
+</html>
