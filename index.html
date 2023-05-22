@@ -57,9 +57,10 @@
             var lines = input.split('\n'); // Split input into separate lines
             var output = "";
 
+            document.getElementById("textOutput").innerHTML.innerHTML = "";
+
             for (var i = 0; i < lines.length; i++) {
                 var line = lines[i];
-                console.log(line)
                 var processedLine = transformText(line); // Call your text processing function here
                 output += processedLine + "\n";
             }
@@ -67,12 +68,35 @@
             document.getElementById("textOutput").innerHTML = output;
         }
 
+        // Function to count words, considering English and numerical characters as 0.5 word and Chinese characters as 1 word
+        function countWords(text) {
+            // Regular expression to match Chinese characters
+            var chinesePattern = /[\u4e00-\u9fa5]/g;
+
+            // Regular expression to match English and numerical characters
+            var englishNumericalPattern = /[a-zA-Z0-9\.?,\/#!$%\^&\*;:{}=\-_`~() ]/g; // Include space in the pattern
+
+            // Count the words, considering English and numerical characters as 0.5 word and Chinese characters as 1 word
+            var wordCount = 0;
+            var matches = text.match(chinesePattern);
+            if (matches) {
+                wordCount += matches.length;
+            }
+
+            var englishNumericalMatches = text.match(englishNumericalPattern);
+            if (englishNumericalMatches) {
+                wordCount += englishNumericalMatches.length * 0.5;
+            }
+
+            return wordCount;
+        }
+
         function transformText(input) {
             // Regular expression to match Chinese characters
             var chinesePattern = /[\u4e00-\u9fa5]/g;
 
             // Regular expression to match English and numerical characters
-            var englishNumericalPattern = /[a-zA-Z0-9]/g;
+            var englishNumericalPattern = /[a-zA-Z0-9\.?,\/#!$%\^&\*;:{}=\-_`~()]/g;
 
             // Insert space between Chinese and English/Numerical characters if there is no existing space
             var transformedText = input.replace(chinesePattern, function (match, index) {
@@ -88,19 +112,20 @@
             }
             return match + ' ';
             });
+            
 
             // Helper function to check if there is an English character before the index
             function isEnglishAfter(text, index) {
-            return englishNumericalPattern.test(text.charAt(index + 1));
+                return englishNumericalPattern.test(text.charAt(index + 1));
             }
 
             // Helper function to check if there is a Chinese character after the index
             function isChineseAfter(text, index) {
-            return chinesePattern.test(text.charAt(index + 1));
+                return chinesePattern.test(text.charAt(index + 1));
             }
 
             // Return original input if the trimmed result exceeds 16 characters
-            if (transformedText.length >= 16) {
+            if (countWords(transformedText) >= 16) {
                 return input;
             }
 
